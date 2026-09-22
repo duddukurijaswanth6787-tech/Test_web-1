@@ -1,6 +1,7 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+ENV DATABASE_URL="file:./dev.db"
 
 COPY package.json package-lock.json ./
 COPY packages/sdk/package.json ./packages/sdk/
@@ -22,6 +23,7 @@ FROM node:20-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
+ENV DATABASE_URL="file:./dev.db"
 
 COPY --from=builder /app ./
 

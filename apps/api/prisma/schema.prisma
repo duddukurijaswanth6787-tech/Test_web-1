@@ -1,0 +1,109 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model SuperAdmin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+model SubscriptionPlan {
+  id                    String               @id // e.g. 'plan_starter', 'plan_growth', 'plan_pro'
+  name                  String
+  priceInrMonthly       Int
+  priceInrYearly        Int
+  maxImages             Int                  @default(30)
+  maxStorageBytes       BigInt               @default(1288490188) // 1.2 GB
+  allowCustomDomain     Boolean              @default(true)
+  allowWhatsappOrdering Boolean              @default(true)
+  allowEcommerce        Boolean              @default(false)
+  createdAt             DateTime             @default(now())
+  subscriptions         ClientSubscription[]
+}
+
+model Client {
+  id              String                @id // e.g. 'cl_hyd_ananya_01'
+  businessName    String
+  ownerName       String
+  ownerPhone      String // WhatsApp Number for billing alerts
+  ownerEmail      String?
+  city            String                @default("Hyderabad")
+  storeAddress    String?
+  instagramHandle String?
+  websiteType     String                @default("WHATSAPP_STORE") // "SHOWCASE" | "WHATSAPP_STORE" | "ECOMMERCE"
+  primaryDomain   String // e.g. 'ananyaboutique.com'
+  allowedDomains  String // Comma-separated domains e.g. "localhost,ananyaboutique.com"
+  
+  // Client Store Owner Login Credentials for /admin
+  adminUsername   String                @default("admin")
+  adminPassword   String                @default("StorePassword@123")
+  githubRepo      String?               // Optional GitHub repository URL e.g. "https://github.com/agency/ananya-sarees"
+  developerNotes  String?               // Private developer vault & troubleshooting notes
+  projectZipUrl   String?               // Optional S3 URL of uploaded project .zip source archive
+  projectZipName  String?               // Original filename of uploaded project .zip file
+  publicApiKey    String                @unique // 'pk_live_...'
+  secretApiKey    String                @unique // 'sk_live_...'
+  createdAt       DateTime              @default(now())
+
+  subscription ClientSubscription?
+  media        ClientMedia[]
+  invoices     SubscriptionInvoice[]
+}
+
+model ClientSubscription {
+  id                     String    @id @default(uuid())
+  clientId               String    @unique
+  planId                 String
+  environmentMode        String    @default("TESTING") // "TESTING" | "LIVE"
+  status                 String    @default("TESTING") // "TESTING" | "PENDING_FIRST_PAYMENT" | "ACTIVE" | "GRACE_PERIOD" | "SUSPENDED" | "CANCELLED"
+  billingCycle           String    @default("MONTHLY") // "MONTHLY" | "YEARLY"
+  activatedAt            DateTime? // The exact date the first payment was completed
+  currentPeriodStart     DateTime  @default(now())
+  currentPeriodEnd       DateTime
+  gracePeriodEnd         DateTime
+  razorpaySubscriptionId String?
+  autoDebitEnabled       Boolean   @default(false)
+  isManualOverride       Boolean   @default(false)
+  updatedAt              DateTime  @updatedAt
+
+  client Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  plan   SubscriptionPlan @relation(fields: [planId], references: [id])
+}
+
+model ClientMedia {
+  id            String   @id @default(uuid())
+  clientId      String
+  fileName      String
+  fileUrl       String
+  fileSizeBytes BigInt
+  mimeType      String
+  category      String   @default("collection") // 'collection' | 'lookbook' | 'hero'
+  title         String?
+  price         Float?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}
+
+model SubscriptionInvoice {
+  id                String    @id @default(uuid())
+  clientId          String
+  amountInr         Float
+  razorpayPaymentId String?
+  razorpayOrderId   String?
+  paymentStatus     String    @default("PENDING") // "PENDING" | "PAID" | "FAILED"
+  paidAt            DateTime?
+  invoicePdfUrl     String?
+  createdAt         DateTime  @default(now())
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+}

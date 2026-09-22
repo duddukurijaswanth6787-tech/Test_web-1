@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: boutique-central-api
+    runtime: docker
+    plan: free
+    region: singapore
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: DATABASE_URL
+        value: "file:./dev.db"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SUPER_ADMIN_EMAIL
+        value: admin@boutiqueplatform.com
+      - key: AWS_REGION
+        value: ap-south-2
+      - key: AWS_BUCKET_NAME
+        value: boutique-media-848910045051-hyd
+      - key: RAZORPAY_KEY_ID
+        value: rzp_live_TSGHBbQLHYa2MW
+      - key: RAZORPAY_KEY_SECRET
+        value: B2o4qv6I0YuWX785GDPjwZpS
+      - key: WHATSAPP_PROVIDER
+        value: none

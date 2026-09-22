@@ -14,6 +14,7 @@ COPY tsconfig.base.json tsconfig.json ./
 
 RUN npm run build:sdk
 RUN npx prisma generate --schema=apps/api/prisma/schema.prisma
+RUN npx prisma db push --schema=apps/api/prisma/schema.prisma --accept-data-loss
 RUN npm run build:api
 
 # Production Runner
@@ -26,4 +27,4 @@ COPY --from=builder /app ./
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "npx prisma db push --schema=apps/api/prisma/schema.prisma && node apps/api/dist/server.js"]
+CMD ["node", "apps/api/dist/server.js"]

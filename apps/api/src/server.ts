@@ -14,6 +14,7 @@ import { clientAdminAuthRoutes } from "./modules/client/adminAuth.routes.js";
 import { storageRoutes } from "./modules/storage/storage.routes.js";
 import { billingRoutes } from "./modules/billing/billing.routes.js";
 import { startExpiryCronJob } from "./services/cron.service.js";
+import { seedDatabase } from "./db/seed.js";
 
 // Polyfill BigInt serialization for JSON.stringify
 declare global {
@@ -329,21 +330,20 @@ process.on("unhandledRejection", (reason) => {
 });
 
 // Start standalone server
-if (process.argv[1]?.endsWith("server.ts") || process.argv[1]?.endsWith("server.js")) {
-  const start = async () => {
+const start = async () => {
+  try {
+    await seedDatabase().catch((err) => console.warn("[Seed Notice]:", err.message));
     const app = await buildApp();
-    try {
-      await app.listen({ port: env.PORT, host: "0.0.0.0" });
-      console.log(`\n===============================================================`);
-      console.log(`🚀 [Boutique Central API] Live at http://localhost:${env.PORT}`);
-      console.log(`📦 [SDK CDN] Bundles at http://localhost:${env.PORT}/sdk/v1/`);
-      console.log(`🛡️ [Error Handler] Global Zod, Prisma & S3 error catchers active!`);
-      console.log(`===============================================================\n`);
-      startExpiryCronJob();
-    } catch (err) {
-      console.error("Failed to start server:", err);
-      process.exit(1);
-    }
-  };
-  start();
-}
+    await app.listen({ port: env.PORT, host: "0.0.0.0" });
+    console.log(`\n===============================================================`);
+    console.log(`🚀 [Boutique Central API] Live on port ${env.PORT}`);
+    console.log(`📦 [SDK CDN] Bundles at http://0.0.0.0:${env.PORT}/sdk/v1/`);
+    console.log(`🛡️ [Error Handler] Global Zod, Prisma & S3 error catchers active!`);
+    console.log(`===============================================================\n`);
+    startExpiryCronJob();
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+};
+start();

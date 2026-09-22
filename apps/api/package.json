@@ -2,6 +2,7 @@
   "name": "@boutique/api",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Central SaaS Backend API for Boutique Platform",
   "main": "./dist/server.js",
   "scripts": {

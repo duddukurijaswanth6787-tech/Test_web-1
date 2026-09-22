@@ -4,6 +4,10 @@ import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 import { env } from "./config/env.js";

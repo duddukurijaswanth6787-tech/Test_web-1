@@ -64,6 +64,62 @@ export async function seedDatabase() {
     },
   });
 
+  // 3. Seed Default Client test_web
+  const now = new Date();
+  const nextMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const graceEnd = new Date(nextMonth.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+  const testWebClient = {
+    id: "cl_hyd_testweb_ac36e7",
+    businessName: "test_web",
+    ownerName: "Test Owner",
+    ownerPhone: "917660922413",
+    ownerEmail: "test@gmail.com",
+    city: "Hyderabad",
+    storeAddress: "mad,hyd",
+    instagramHandle: "@test",
+    websiteType: "WHATSAPP_STORE",
+    primaryDomain: "web-122.vercel.app",
+    allowedDomains: "*,localhost,127.0.0.1,localhost:5173,web-122.vercel.app,*.vercel.app,web-122-87h266p8z-vsss.vercel.app,web-122-ech9ot1e1-vsss.vercel.app",
+    adminUsername: "admin",
+    publicApiKey: "pk_live_" + "5c3ac9ca816bea0b15000da1b6f4a84b",
+    secretApiKey: "sk_live_" + "8877a142eb412312e434fa41b747f7342218cbd3f016b201",
+    githubRepo: "https://github.com/duddukurijaswanth6787-tech/test_web",
+  };
+
+  await prisma.client.upsert({
+    where: { id: testWebClient.id },
+    update: testWebClient,
+    create: testWebClient,
+  });
+
+  await prisma.clientSubscription.upsert({
+    where: { clientId: testWebClient.id },
+    update: {
+      planId: "plan_starter",
+      environmentMode: "LIVE",
+      status: "ACTIVE",
+      billingCycle: "MONTHLY",
+      activatedAt: now,
+      currentPeriodStart: now,
+      currentPeriodEnd: nextMonth,
+      gracePeriodEnd: graceEnd,
+      isManualOverride: false,
+    },
+    create: {
+      clientId: testWebClient.id,
+      planId: "plan_starter",
+      environmentMode: "LIVE",
+      status: "ACTIVE",
+      billingCycle: "MONTHLY",
+      activatedAt: now,
+      currentPeriodStart: now,
+      currentPeriodEnd: nextMonth,
+      gracePeriodEnd: graceEnd,
+      isManualOverride: false,
+    },
+  });
+
   console.log("[Seed] Database seed completed successfully.");
 }
 

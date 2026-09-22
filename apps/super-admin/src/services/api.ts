@@ -3,8 +3,8 @@ import { ClientData, SubscriptionPlan, InvoiceItem, WebsiteHealthStatus, Website
 const rawMeta = import.meta;
 const envApiUrl = "env" in rawMeta && rawMeta.env && typeof rawMeta.env === "object" && "VITE_API_URL" in rawMeta.env && typeof rawMeta.env.VITE_API_URL === "string"
   ? rawMeta.env.VITE_API_URL
-  : "";
-const API_BASE = envApiUrl ? `${envApiUrl}/api/v1` : "http://localhost:4000/api/v1";
+  : "https://boutique-central-api.onrender.com";
+const API_BASE = `${envApiUrl}/api/v1`;
 
 export function getAuthToken(): string | null {
   return localStorage.getItem("super_admin_jwt");

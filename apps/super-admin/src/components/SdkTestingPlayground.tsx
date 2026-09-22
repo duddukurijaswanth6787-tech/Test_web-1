@@ -40,8 +40,11 @@ export const SdkTestingPlayground: React.FC<SdkTestingPlaygroundProps> = ({ clie
     }));
 
     const start = Date.now();
-    const apiUrl = "http://localhost:4000/api/v1";
-
+    const rawMeta = import.meta;
+    const envApiUrl = "env" in rawMeta && rawMeta.env && typeof rawMeta.env === "object" && "VITE_API_URL" in rawMeta.env && typeof rawMeta.env.VITE_API_URL === "string"
+      ? rawMeta.env.VITE_API_URL
+      : "https://boutique-central-api.onrender.com";
+    const apiUrl = `${envApiUrl}/api/v1`;
     try {
       if (testId === "gatekeeper") {
         const res = await fetch(`${apiUrl}/client/status`, {

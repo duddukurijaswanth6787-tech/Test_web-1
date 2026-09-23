@@ -13,6 +13,7 @@ import { AiPromptModal } from "./components/AiPromptModal";
 import { AiPromptKitView } from "./components/AiPromptKitView";
 import { SdkTestingPlayground } from "./components/SdkTestingPlayground";
 import { MandatesGuideView } from "./components/MandatesGuideView";
+import { WhatsAppTemplatesView } from "./components/WhatsAppTemplatesView";
 import {
   Shield,
   Plus,
@@ -31,21 +32,22 @@ import {
   FileText,
   Search,
   MapPin,
-  Camera,
-  CheckCircle2,
-  Eye,
-  Edit3,
-  TestTube2,
   Download,
   KeyRound,
   Globe,
   Zap,
-  Radio
+  Radio,
+  MessageSquare,
+  TestTube2,
+  CheckCircle2,
+  Camera,
+  Eye,
+  Edit3
 } from "lucide-react";
 
-type NavTab = "overview" | "clients" | "plans" | "storage" | "invoices" | "prompts" | "test-sdk" | "docs";
+type NavTab = "overview" | "clients" | "plans" | "storage" | "invoices" | "whatsapp" | "prompts" | "test-sdk" | "docs";
 
-const VALID_TABS: NavTab[] = ["overview", "clients", "plans", "storage", "invoices", "prompts", "test-sdk", "docs"];
+const VALID_TABS: NavTab[] = ["overview", "clients", "plans", "storage", "invoices", "whatsapp", "prompts", "test-sdk", "docs"];
 
 export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!getAuthToken());
@@ -413,6 +415,18 @@ export function App() {
             >
               <HardDrive className="w-4 h-4" />
               <span>AWS S3 Storage</span>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("whatsapp")}
+              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all cursor-pointer ${
+                activeNav === "whatsapp"
+                  ? "bg-indigo-50 text-indigo-600 shadow-2xs"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              }`}
+            >
+              <MessageSquare className="w-4 h-4 text-emerald-600" />
+              <span>WhatsApp Templates</span>
             </button>
 
             <button
@@ -1119,6 +1133,11 @@ export function App() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {/* 5.5 WHATSAPP TEMPLATES & AUTOMATION TAB ⭐ */}
+          {activeNav === "whatsapp" && (
+            <WhatsAppTemplatesView clients={clients} />
           )}
 
           {/* 6. AI PROMPT KIT & BUILDER TAB */}

@@ -53,7 +53,10 @@ const updateStatusSchema = z.object({
   status: z.enum(["TESTING", "PENDING_FIRST_PAYMENT", "ACTIVE", "GRACE_PERIOD", "SUSPENDED", "CANCELLED"]).optional(),
   environmentMode: z.enum(["TESTING", "LIVE"]).optional(),
   isManualOverride: z.boolean().optional(),
-  extendGraceDays: z.number().int().positive().optional(),
+  extendGraceDays: z.number().int().optional(),
+  currentPeriodEnd: z.string().optional(),
+  gracePeriodEnd: z.string().optional(),
+  activatedAt: z.string().optional().nullable(),
   planId: z.string().optional(),
 });
 
@@ -420,8 +423,7 @@ export async function adminClientRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: "Invalid status payload", details: parseResult.error.format() });
     }
 
-    const { status, environmentMode, isManualOverride, extendGraceDays, planId } = parseResult.data;
-
+    const { status, environmentMode, isManualOverride, extendGraceDays, currentPeriodEnd, gracePeriodEnd, activatedAt, planId } = parseResult.data;
     const existingSub = await prisma.clientSubscription.findUnique({
       where: { clientId: id },
     });
@@ -436,13 +438,17 @@ export async function adminClientRoutes(app: FastifyInstance) {
     if (environmentMode) updateData.environmentMode = environmentMode;
     if (isManualOverride !== undefined) updateData.isManualOverride = isManualOverride;
     if (planId) updateData.planId = planId;
+    if (currentPeriodEnd) updateData.currentPeriodEnd = new Date(currentPeriodEnd);
+    if (gracePeriodEnd) updateData.gracePeriodEnd = new Date(gracePeriodEnd);
+    if (activatedAt !== undefined) {
+      updateData.activatedAt = activatedAt ? new Date(activatedAt) : null;
+    }
 
     if (extendGraceDays) {
       const currentGrace = new Date(existingSub.gracePeriodEnd);
       updateData.gracePeriodEnd = new Date(currentGrace.getTime() + extendGraceDays * 24 * 60 * 60 * 1000);
       updateData.status = "ACTIVE";
     }
-
     const updated = await prisma.clientSubscription.update({
       where: { clientId: id },
       data: updateData,

@@ -36,7 +36,8 @@ import {
   UploadCloud,
   Loader2,
   Bug,
-  FileCode
+  FileCode,
+  Calendar
 } from "lucide-react";
 
 interface StoreDetailsDrawerProps {
@@ -726,6 +727,88 @@ MAX_STORAGE_MB=${client.subscription?.maxStorageBytes ? Math.round(client.subscr
                     <span className="font-semibold text-slate-800 text-xs mt-0.5 block">
                       {sub?.activatedAt ? new Date(sub.currentPeriodEnd).toLocaleDateString("en-IN") : "Starts Upon First Payment"}
                     </span>
+                  </div>
+                </div>
+
+                {/* 🧪 TESTING DATE SIMULATOR (Change dates to test Grace, Expiry, Suspension) */}
+                <div className="p-3 bg-amber-50/60 border border-amber-200/80 rounded-2xl space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-950 flex items-center gap-1.5 text-[11px]">
+                      <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                      Subscription Date &amp; Lifecycle Simulator (Test Scenarios)
+                    </span>
+                    <span className="text-[9px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.2 rounded">Simulate Scenarios</span>
+                  </div>
+                  <p className="text-[10px] text-amber-800 leading-snug">
+                    Click any scenario to instantly shift database dates and test how the client website &amp; SDK react:
+                  </p>
+                  <div className="grid grid-cols-3 gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={async () => {
+                        const now = new Date();
+                        const end = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                        const grace = new Date(now.getTime() + 33 * 24 * 60 * 60 * 1000);
+                        await api.updateClientStatus(client.id, {
+                          currentPeriodEnd: end.toISOString(),
+                          gracePeriodEnd: grace.toISOString(),
+                          activatedAt: now.toISOString(),
+                          status: "ACTIVE",
+                          environmentMode: "LIVE",
+                          isManualOverride: true,
+                        });
+                        if (onRefresh) await onRefresh();
+                      }}
+                      className="p-1.5 bg-white hover:bg-amber-100/60 border border-amber-300 rounded-xl text-[10px] font-bold text-slate-800 transition-colors text-center cursor-pointer shadow-2xs"
+                      title="Reset subscription to full 30 days active"
+                    >
+                      🟢 Fresh +30 Days
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={async () => {
+                        const now = new Date();
+                        const end = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000);
+                        const grace = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+                        await api.updateClientStatus(client.id, {
+                          currentPeriodEnd: end.toISOString(),
+                          gracePeriodEnd: grace.toISOString(),
+                          status: "GRACE_PERIOD",
+                          environmentMode: "LIVE",
+                          isManualOverride: true,
+                        });
+                        if (onRefresh) await onRefresh();
+                      }}
+                      className="p-1.5 bg-white hover:bg-amber-100/60 border border-amber-300 rounded-xl text-[10px] font-bold text-amber-900 transition-colors text-center cursor-pointer shadow-2xs"
+                      title="Simulate grace period banner on client website"
+                    >
+                      🟡 Grace Period
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={async () => {
+                        const now = new Date();
+                        const end = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+                        const grace = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+                        await api.updateClientStatus(client.id, {
+                          currentPeriodEnd: end.toISOString(),
+                          gracePeriodEnd: grace.toISOString(),
+                          status: "SUSPENDED",
+                          environmentMode: "LIVE",
+                          isManualOverride: true,
+                        });
+                        if (onRefresh) await onRefresh();
+                      }}
+                      className="p-1.5 bg-white hover:bg-rose-100/60 border border-rose-300 rounded-xl text-[10px] font-bold text-rose-800 transition-colors text-center cursor-pointer shadow-2xs"
+                      title="Simulate past-due suspension lockdown"
+                    >
+                      🔴 Expired Lock
+                    </button>
                   </div>
                 </div>
 

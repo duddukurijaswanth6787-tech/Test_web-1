@@ -153,6 +153,9 @@ export const api = {
       environmentMode?: "TESTING" | "LIVE";
       isManualOverride?: boolean;
       extendGraceDays?: number;
+      currentPeriodEnd?: string;
+      gracePeriodEnd?: string;
+      activatedAt?: string | null;
       planId?: string;
     }
   ): Promise<{ success: boolean }> {

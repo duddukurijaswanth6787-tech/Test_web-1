@@ -742,7 +742,24 @@ MAX_STORAGE_MB=${client.subscription?.maxStorageBytes ? Math.round(client.subscr
                   <p className="text-[10px] text-amber-800 leading-snug">
                     Click any scenario to instantly shift database dates and test how the client website &amp; SDK react:
                   </p>
-                  <div className="grid grid-cols-3 gap-1.5 pt-1">
+                  <div className="grid grid-cols-4 gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      disabled={actionLoading}
+                      onClick={async () => {
+                        await api.updateClientStatus(client.id, {
+                          status: "TESTING",
+                          environmentMode: "TESTING",
+                          isManualOverride: true,
+                        });
+                        if (onRefresh) await onRefresh();
+                      }}
+                      className="p-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded-xl text-[10px] font-bold text-slate-800 transition-colors text-center cursor-pointer shadow-2xs"
+                      title="Test Free Development Mode"
+                    >
+                      🟡 Testing Mode
+                    </button>
+
                     <button
                       type="button"
                       disabled={actionLoading}
@@ -760,10 +777,10 @@ MAX_STORAGE_MB=${client.subscription?.maxStorageBytes ? Math.round(client.subscr
                         });
                         if (onRefresh) await onRefresh();
                       }}
-                      className="p-1.5 bg-white hover:bg-amber-100/60 border border-amber-300 rounded-xl text-[10px] font-bold text-slate-800 transition-colors text-center cursor-pointer shadow-2xs"
+                      className="p-1.5 bg-white hover:bg-emerald-100/60 border border-emerald-300 rounded-xl text-[10px] font-bold text-emerald-900 transition-colors text-center cursor-pointer shadow-2xs"
                       title="Reset subscription to full 30 days active"
                     >
-                      🟢 Fresh +30 Days
+                      🟢 Active (+30d)
                     </button>
 
                     <button
@@ -785,7 +802,7 @@ MAX_STORAGE_MB=${client.subscription?.maxStorageBytes ? Math.round(client.subscr
                       className="p-1.5 bg-white hover:bg-amber-100/60 border border-amber-300 rounded-xl text-[10px] font-bold text-amber-900 transition-colors text-center cursor-pointer shadow-2xs"
                       title="Simulate grace period banner on client website"
                     >
-                      🟡 Grace Period
+                      🟡 Grace (+2d)
                     </button>
 
                     <button
@@ -807,8 +824,34 @@ MAX_STORAGE_MB=${client.subscription?.maxStorageBytes ? Math.round(client.subscr
                       className="p-1.5 bg-white hover:bg-rose-100/60 border border-rose-300 rounded-xl text-[10px] font-bold text-rose-800 transition-colors text-center cursor-pointer shadow-2xs"
                       title="Simulate past-due suspension lockdown"
                     >
-                      🔴 Expired Lock
+                      🔴 Lock Screen
                     </button>
+                  </div>
+
+                  {/* Custom Exact Date Setter */}
+                  <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between gap-2">
+                    <span className="text-[10px] text-amber-900 font-semibold shrink-0">Set Custom Expiry Date:</span>
+                    <div className="flex items-center gap-1.5 flex-1 justify-end">
+                      <input
+                        type="date"
+                        defaultValue={sub?.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toISOString().split('T')[0] : ""}
+                        onChange={async (e) => {
+                          if (!e.target.value) return;
+                          const targetDate = new Date(e.target.value);
+                          const graceDate = new Date(targetDate.getTime() + 3 * 24 * 60 * 60 * 1000);
+                          const isExpired = targetDate.getTime() < Date.now();
+                          await api.updateClientStatus(client.id, {
+                            currentPeriodEnd: targetDate.toISOString(),
+                            gracePeriodEnd: graceDate.toISOString(),
+                            status: isExpired ? "GRACE_PERIOD" : "ACTIVE",
+                            environmentMode: "LIVE",
+                            isManualOverride: true,
+                          });
+                          if (onRefresh) await onRefresh();
+                        }}
+                        className="px-2 py-1 bg-white border border-amber-300 rounded-lg text-[11px] text-slate-800 font-mono focus:outline-none cursor-pointer"
+                      />
+                    </div>
                   </div>
                 </div>
 

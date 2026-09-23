@@ -164,13 +164,23 @@ export class GatekeeperModule {
       return;
     }
 
-    // 🟡 4. Handle GRACE_PERIOD State (Floating Warning Banner)
+    // 🟡 4. Handle GRACE_PERIOD State:
+    // Keep public storefront 100% clean for normal customers; show warning banner ONLY inside store owner /admin console
     if (status.status === "GRACE_PERIOD") {
-      const daysLeft = Math.max(
-        0,
-        Math.ceil((new Date(status.gracePeriodEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+      const isAdminRoute = typeof window !== "undefined" && (
+        window.location.pathname.includes("admin") || 
+        window.location.hash.includes("admin") ||
+        window.location.search.includes("admin") ||
+        !!localStorage.getItem("boutique_store_token")
       );
-      this.renderGraceBanner(daysLeft);
+
+      if (isAdminRoute) {
+        const daysLeft = Math.max(
+          0,
+          Math.ceil((new Date(status.gracePeriodEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        );
+        this.renderGraceBanner(daysLeft);
+      }
       return;
     }
 
